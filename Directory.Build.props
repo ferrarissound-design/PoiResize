@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- リリース時は -p:Version=1.2.3 で上書きされる -->
+    <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+    <!-- About に "+コミットハッシュ" が付かないようにする -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Product>PoiResize</Product>
+    <Company>PoiResize</Company>
+    <Copyright>Copyright (c) PoiResize contributors</Copyright>
+    <!-- Linux/macOS 上でも Windows 向けプロジェクトをビルドできるようにする（実行は Windows のみ） -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- PDB は dll/exe に埋め込む（単一ファイル exe の横に .pdb を出さない） -->
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+</Project>

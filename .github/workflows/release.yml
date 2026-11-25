@@ -1,0 +1,107 @@
+name: Release
+
+# Actions タブ → Release → Run workflow → バージョンを入力して実行
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン番号（例 1.0.0）"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      INPUT_VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: バージョン番号を確認
+        run: |
+          $v = $env:INPUT_VERSION.Trim()
+          if ($v.StartsWith('v') -or $v.StartsWith('V')) { $v = $v.Substring(1) }
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$') {
+            Write-Error "バージョン番号の形式が正しくありません: '$env:INPUT_VERSION'（例: 1.0.0 / 1.2.3-beta1）"
+            exit 1
+          }
+          "VERSION=$v"  | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TAG=v$v"     | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "EXE_NAME=PoiResize-v$v-win-x64.exe" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Version: $v"
+
+      - name: 同じバージョンのタグ・リリースがないか確認
+        run: |
+          git ls-remote --exit-code --tags origin "refs/tags/$env:TAG" | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Error "タグ $env:TAG はすでに存在します。別のバージョン番号を指定してください。"
+            exit 1
+          }
+          gh release view $env:TAG 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Error "リリース $env:TAG はすでに存在します。"
+            exit 1
+          }
+          Write-Host "OK: $env:TAG はまだ使われていません"
+          exit 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: ビルド
+        run: |
+          dotnet restore PoiResize.sln
+          dotnet build PoiResize.sln -c Release --no-restore -p:Version=$env:VERSION
+
+      - name: テスト
+        run: dotnet test PoiResize.sln -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: 単一ファイル exe を発行
+        run: |
+          dotnet publish src/PoiResize.App/PoiResize.App.csproj -c Release -r win-x64 --self-contained true -p:Version=$env:VERSION -o publish
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Move-Item publish/PoiResize.exe "dist/$env:EXE_NAME"
+          Get-ChildItem dist | Format-Table Name, Length
+
+      - name: exe に埋め込まれたバージョンを確認
+        run: |
+          $info = (Get-Item "dist/$env:EXE_NAME").VersionInfo
+          Write-Host "ProductVersion: $($info.ProductVersion) / FileVersion: $($info.FileVersion)"
+          if ($info.ProductVersion -ne $env:VERSION) {
+            Write-Error "exe のバージョン ($($info.ProductVersion)) が入力 ($env:VERSION) と一致しません"
+            exit 1
+          }
+
+      - name: タグを作成
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $env:TAG -m "PoiResize $env:TAG" $env:GITHUB_SHA
+          git push origin $env:TAG
+
+      - name: GitHub Release を作成
+        run: |
+          $notes = @"
+          ## ダウンロード
+          **$env:EXE_NAME** をダウンロードして、ダブルクリックで起動してください（インストール不要・.NET ランタイム不要）。
+
+          初回起動時に「Windows によって PC が保護されました」と出たら、**詳細情報** → **実行** を押してください。
+          "@
+          $ghArgs = @($env:TAG, "dist/$env:EXE_NAME", "--title", "PoiResize $env:TAG", "--notes", $notes, "--generate-notes", "--verify-tag")
+          if ($env:VERSION.Contains('-')) { $ghArgs += "--prerelease" }
+          gh release create @ghArgs

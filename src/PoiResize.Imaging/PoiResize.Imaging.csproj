@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- WIC（Windows Imaging Component）を WPF の System.Windows.Media.Imaging 経由で使う読み書き層。
+       外部ライブラリは使わない。 -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PoiResize.Imaging</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PoiResize.Core\PoiResize.Core.csproj" />
+  </ItemGroup>
+
+</Project>

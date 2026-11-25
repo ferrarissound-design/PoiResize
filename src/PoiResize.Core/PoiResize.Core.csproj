@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 画像処理の「計算」と「ピクセル演算」だけを持つ、OS 非依存のライブラリ。
+       WPF/WIC には依存しないので、どの OS でもユニットテストが走る。 -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PoiResize.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PoiResize.Core.Tests" />
+  </ItemGroup>
+
+</Project>
