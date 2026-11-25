@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8338DEAE-66D1-4DCA-9E01-74BB54401909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiResize.Core", "src\PoiResize.Core\PoiResize.Core.csproj", "{96CC5639-919E-40A0-A7F1-EFC01C259B7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiResize.Imaging", "src\PoiResize.Imaging\PoiResize.Imaging.csproj", "{896D2B21-6198-4D99-9781-EE80A1422650}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiResize.App", "src\PoiResize.App\PoiResize.App.csproj", "{B14F3550-0FA2-469B-B747-A9291B8CC36E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{858717DC-3A3C-483D-A544-A36050B96858}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiResize.Core.Tests", "tests\PoiResize.Core.Tests\PoiResize.Core.Tests.csproj", "{51A27D8C-2292-4B2A-B35B-D499FFC39DF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiResize.Imaging.Tests", "tests\PoiResize.Imaging.Tests\PoiResize.Imaging.Tests.csproj", "{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{96CC5639-919E-40A0-A7F1-EFC01C259B7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96CC5639-919E-40A0-A7F1-EFC01C259B7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96CC5639-919E-40A0-A7F1-EFC01C259B7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96CC5639-919E-40A0-A7F1-EFC01C259B7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{896D2B21-6198-4D99-9781-EE80A1422650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{896D2B21-6198-4D99-9781-EE80A1422650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{896D2B21-6198-4D99-9781-EE80A1422650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{896D2B21-6198-4D99-9781-EE80A1422650}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B14F3550-0FA2-469B-B747-A9291B8CC36E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B14F3550-0FA2-469B-B747-A9291B8CC36E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B14F3550-0FA2-469B-B747-A9291B8CC36E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B14F3550-0FA2-469B-B747-A9291B8CC36E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51A27D8C-2292-4B2A-B35B-D499FFC39DF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A27D8C-2292-4B2A-B35B-D499FFC39DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A27D8C-2292-4B2A-B35B-D499FFC39DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A27D8C-2292-4B2A-B35B-D499FFC39DF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{96CC5639-919E-40A0-A7F1-EFC01C259B7B} = {8338DEAE-66D1-4DCA-9E01-74BB54401909}
+		{896D2B21-6198-4D99-9781-EE80A1422650} = {8338DEAE-66D1-4DCA-9E01-74BB54401909}
+		{B14F3550-0FA2-469B-B747-A9291B8CC36E} = {8338DEAE-66D1-4DCA-9E01-74BB54401909}
+		{51A27D8C-2292-4B2A-B35B-D499FFC39DF8} = {858717DC-3A3C-483D-A544-A36050B96858}
+		{AE0EE3D3-0FAD-4BBC-B466-E49D5B87AE8B} = {858717DC-3A3C-483D-A544-A36050B96858}
+	EndGlobalSection
+EndGlobal

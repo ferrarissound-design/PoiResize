@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PoiResize.App</RootNamespace>
+    <AssemblyName>PoiResize</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyTitle>PoiResize - 画像一括リサイズ＆加工ツール</AssemblyTitle>
+  </PropertyGroup>
+
+  <!-- dotnet publish -r win-x64 のときだけ効く：自己完結・単一ファイル -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <!-- WPF のネイティブ DLL も exe に同梱する（ないと exe の横に DLL が並ぶ） -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PoiResize.Core\PoiResize.Core.csproj" />
+    <ProjectReference Include="..\PoiResize.Imaging\PoiResize.Imaging.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,295 @@
+<Window x:Class="PoiResize.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Width="1280" Height="820" MinWidth="960" MinHeight="600"
+        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop"
+        WindowStartupLocation="CenterScreen" FontSize="13">
+
+    <DockPanel>
+        <!-- メニュー -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="ファイル(_F)">
+                <MenuItem Header="画像を追加(_A)…" Command="{Binding AddFilesCommand}" />
+                <MenuItem Header="フォルダを追加(_D)…" Command="{Binding AddFolderCommand}" />
+                <Separator />
+                <MenuItem Header="終了(_X)" Click="Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="ヘルプ(_H)">
+                <MenuItem Header="PoiResize について(_A)…" Command="{Binding AboutCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <!-- 下部：進捗と実行 -->
+        <Border DockPanel.Dock="Bottom" BorderBrush="#DDD" BorderThickness="0,1,0,0" Padding="8" Background="#F7F7F7">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <ProgressBar Height="16" Minimum="0" Maximum="100" Value="{Binding Progress}" />
+                    <TextBlock Text="{Binding Status}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                    <Button Content="▶ 実行" Command="{Binding RunCommand}" FontWeight="Bold" MinWidth="110" Padding="14,8" />
+                    <Button Content="キャンセル" Command="{Binding CancelCommand}" MinWidth="90" />
+                    <Button Content="📂 出力フォルダを開く" Command="{Binding OpenOutputFolderCommand}" MinWidth="150" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="420" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="400" MinWidth="340" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左：画像一覧 -->
+            <DockPanel>
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                    <Button Content="＋ 画像" Command="{Binding AddFilesCommand}" />
+                    <Button Content="＋ フォルダ" Command="{Binding AddFolderCommand}" />
+                    <CheckBox Content="サブフォルダも読み込む" IsChecked="{Binding Settings.RecursiveFolders}" Margin="8,4" />
+                    <Separator Width="8" Visibility="Hidden" />
+                    <Button Content="▲ 上へ" Command="{Binding MoveUpCommand}" CommandParameter="{Binding SelectedItems, ElementName=List}" />
+                    <Button Content="▼ 下へ" Command="{Binding MoveDownCommand}" CommandParameter="{Binding SelectedItems, ElementName=List}" />
+                    <Button Content="名前順" Command="{Binding SortByNameCommand}" ToolTip="エクスプローラーと同じ並び（img2 → img10）" />
+                    <Button Content="日付順" Command="{Binding SortByDateCommand}" ToolTip="撮影日（なければ更新日）の古い順" />
+                    <Button Content="削除" Command="{Binding RemoveSelectedCommand}" CommandParameter="{Binding SelectedItems, ElementName=List}" />
+                    <Button Content="全てクリア" Command="{Binding ClearCommand}" />
+                    <TextBlock Text="{Binding CountText}" VerticalAlignment="Center" Margin="8,0" Foreground="#555" />
+                </WrapPanel>
+                <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Hint}"
+                           Text="一覧の並び順がそのまま連番の順番になります。行をドラッグして並べ替え、Delete キーで削除できます。" />
+                <Grid>
+                    <ListView x:Name="List" ItemsSource="{Binding Items}" SelectionMode="Extended"
+                              AllowDrop="True" KeyDown="List_KeyDown"
+                              PreviewMouseLeftButtonDown="List_PreviewMouseLeftButtonDown"
+                              PreviewMouseMove="List_PreviewMouseMove"
+                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="#" Width="40" DisplayMemberBinding="{Binding Number}" />
+                                <GridViewColumn Header="" Width="64">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image Source="{Binding Thumbnail}" Width="48" Height="48" Stretch="Uniform"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="元のファイル名" Width="190">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FileName}" ToolTip="{Binding SourcePath}" TextTrimming="CharacterEllipsis" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="元サイズ" Width="95" DisplayMemberBinding="{Binding SizeText}" />
+                                <GridViewColumn Header="→ 新しい名前" Width="190">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding NewName}" Foreground="#0B5394" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="出力サイズ" Width="95" DisplayMemberBinding="{Binding OutputSizeText}" />
+                                <GridViewColumn Header="状態" Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Status}" ToolTip="{Binding Status}" TextTrimming="CharacterEllipsis" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Border IsHitTestVisible="False" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                                   Foreground="#999" FontSize="18" LineHeight="30">
+                            ここに画像やフォルダをドラッグ＆ドロップ<LineBreak />
+                            <Run FontSize="12">JPG / PNG / BMP / GIF / TIFF / WebP</Run>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
+
+            <!-- 右：設定 -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding IsIdle}">
+                <StackPanel Margin="0,0,6,0">
+
+                    <!-- プリセット -->
+                    <GroupBox Header="プリセット">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" DisplayMemberPath="Name" />
+                            <Button Grid.Column="1" Content="削除" Command="{Binding DeletePresetCommand}" />
+                            <TextBox Grid.Row="1" Text="{Binding PresetName, UpdateSourceTrigger=PropertyChanged}" ToolTip="保存するプリセット名" />
+                            <Button Grid.Row="1" Grid.Column="1" Content="今の設定を保存" Command="{Binding SavePresetCommand}" />
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- リサイズ -->
+                    <GroupBox Header="リサイズ">
+                        <StackPanel>
+                            <ComboBox ItemsSource="{Binding ResizeModes}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                      SelectedValue="{Binding Settings.ResizeMode}" />
+                            <StackPanel Orientation="Horizontal" Visibility="{Binding IsSizeMode, Converter={StaticResource BoolToVis}}">
+                                <Label Content="幅" />
+                                <TextBox Width="70" Text="{Binding Settings.Width, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="× 高さ" />
+                                <TextBox Width="70" Text="{Binding Settings.Height, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="px" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Visibility="{Binding IsLongEdgeMode, Converter={StaticResource BoolToVis}}">
+                                <Label Content="長辺" />
+                                <TextBox Width="70" Text="{Binding Settings.LongEdge, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="px" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Visibility="{Binding IsPercentMode, Converter={StaticResource BoolToVis}}">
+                                <Label Content="比率" />
+                                <TextBox Width="70" Text="{Binding Settings.Percent, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="%" />
+                            </StackPanel>
+                            <CheckBox Content="拡大しない（元が小さければそのまま）" IsChecked="{Binding Settings.NoUpscale}" />
+                            <TextBlock Style="{StaticResource Hint}" Text="スマホ写真の回転情報（EXIF）は自動で反映されます。" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- キャンバス・余白 -->
+                    <GroupBox Header="余白・キャンバス">
+                        <StackPanel>
+                            <CheckBox Content="出力キャンバスのサイズを固定する" IsChecked="{Binding Settings.CanvasEnabled}" />
+                            <StackPanel Orientation="Horizontal" IsEnabled="{Binding Settings.CanvasEnabled}" Margin="16,0,0,0">
+                                <TextBox Width="70" Text="{Binding Settings.CanvasWidth, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="×" />
+                                <TextBox Width="70" Text="{Binding Settings.CanvasHeight, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="px" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" IsEnabled="{Binding Settings.CanvasEnabled}" Margin="16,0,0,0">
+                                <Label Content="配置" />
+                                <ComboBox Width="90" ItemsSource="{Binding Anchors}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectedValue="{Binding Settings.Anchor}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Hint}" Margin="16,0,0,4"
+                                       Text="画像がキャンバス（余白を除いた範囲）より大きい場合は、収まるよう縮小されます。" />
+
+                            <CheckBox Content="余白を付ける" IsChecked="{Binding Settings.PaddingEnabled}" />
+                            <StackPanel Margin="16,0,0,0" IsEnabled="{Binding Settings.PaddingEnabled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="上下左右を一括" IsChecked="{Binding Settings.PaddingUniform}" GroupName="pad" />
+                                    <RadioButton Content="個別に指定" GroupName="pad"
+                                                 IsChecked="{Binding Settings.PaddingUniform, Converter={StaticResource InverseBool}}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsPaddingUniformVisible, Converter={StaticResource BoolToVis}}">
+                                    <Label Content="余白" />
+                                    <TextBox Width="60" Text="{Binding Settings.PaddingAll, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Label Content="px" />
+                                </StackPanel>
+                                <Grid Visibility="{Binding IsPaddingIndividual, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Label Content="上" />
+                                    <TextBox Grid.Column="1" Text="{Binding Settings.PaddingTop, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Label Grid.Column="2" Content="下" />
+                                    <TextBox Grid.Column="3" Text="{Binding Settings.PaddingBottom, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Label Grid.Row="1" Content="左" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Settings.PaddingLeft, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Label Grid.Row="1" Grid.Column="2" Content="右" />
+                                    <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Settings.PaddingRight, UpdateSourceTrigger=PropertyChanged}" />
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Label Content="余白の色" />
+                                <ComboBox Width="200" ItemsSource="{Binding Backgrounds}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectedValue="{Binding Settings.Background}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="16,0,0,0" Visibility="{Binding IsCustomColor, Converter={StaticResource BoolToVis}}">
+                                <TextBox Width="100" Text="{Binding Settings.CustomColor, UpdateSourceTrigger=PropertyChanged}" ToolTip="#RRGGBB 形式（例：#F0F0F0）" />
+                                <Border Width="24" Height="20" Margin="4,0" BorderBrush="#888" BorderThickness="1" Background="{Binding CustomColorBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- リネーム -->
+                    <GroupBox Header="連番リネーム">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="パターン" />
+                                <TextBox Grid.Column="1" Text="{Binding Settings.RenamePattern, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                            <TextBlock Style="{StaticResource Hint}">
+                                {name}＝元のファイル名　{###}＝連番（# の数が桁数）<LineBreak />
+                                {date}＝撮影日（なければ更新日, 例 20240131）<LineBreak />
+                                例：{name}_{###}　shop_{###}　{date}_{##}
+                            </TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="開始番号" />
+                                <TextBox Width="60" Text="{Binding Settings.StartNumber, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="増分" />
+                                <TextBox Width="60" Text="{Binding Settings.Increment, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Hint}" Foreground="#B45F06" Text="{Binding RenameWarning}" />
+                            <TextBlock Style="{StaticResource Hint}" Text="同じ名前になる場合や出力先に同名ファイルがある場合は、自動で _1, _2… を付けます（上書きしません）。" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- 出力 -->
+                    <GroupBox Header="出力">
+                        <StackPanel>
+                            <Label Content="出力先フォルダ" />
+                            <TextBlock Text="{Binding OutputFolderDisplay}" TextWrapping="Wrap" Margin="4,0,4,2" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="変更…" Command="{Binding BrowseOutputCommand}" />
+                                <Button Content="初期値に戻す" Command="{Binding ResetOutputCommand}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Hint}" Text="元ファイルは上書き・削除しません。" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Label Content="形式" />
+                                <ComboBox Width="120" ItemsSource="{Binding OutputFormats}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectedValue="{Binding Settings.OutputFormat}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Hint}" Text="{Binding WebPNote}" />
+                            <TextBlock Style="{StaticResource Hint}" Text="「元と同じ」で GIF は PNG で保存します（GIF は色数が 256 色に落ちるため）。" />
+
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="JPG 画質" />
+                                <Slider Width="160" Minimum="1" Maximum="100" Value="{Binding Settings.JpegQuality}"
+                                        IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" />
+                                <TextBox Width="44" Text="{Binding Settings.JpegQuality, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <CheckBox Content="メタデータ（EXIF）を残す" IsChecked="{Binding Settings.KeepMetadata}" />
+                            <TextBlock Style="{StaticResource Hint}"
+                                       Text="既定はオフ（消す）：位置情報（GPS）などが残るのを防ぎます。残せるのは JPG→JPG / TIFF→TIFF のときです。" />
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>
